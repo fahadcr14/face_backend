@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Shape Detection</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+    <!-- Navbar -->
+    <nav class="bg-blue-600 text-white p-4 flex justify-between items-center">
+        <div class="text-lg font-bold">Face Shape Detect</div>
+        <div class="space-x-4">
+            <a href="#" class="hover:text-gray-300">Detect</a>
+            <a href="#" class="hover:text-gray-300">Blog</a>
+            <a href="#" class="hover:text-gray-300">About Us</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero bg-blue-500 text-white text-center py-16">
+        <h1 class="text-4xl font-semibold">Detect Your Face Shape with AI</h1>
+        <p class="mt-4 text-xl">Upload an image and let AI detect your face shape.</p>
+    </section>
+
+    <!-- Upload Section -->
+    <section class="upload-section text-center py-16">
+        <h2 class="text-3xl font-semibold">Upload Your Image</h2>
+        <input type="file" id="file-upload" class="mt-4 p-2 border rounded" />
+        <button onclick="uploadImage()" class="mt-4 bg-blue-600 text-white p-2 rounded">Upload and Detect</button>
+    </section>
+
+    <!-- Result Section -->
+    <section id="result-section" class="hidden py-16">
+        <h2 class="text-3xl font-semibold text-center">Detection Results</h2>
+        <!-- Display top result as heading -->
+        <h3 id="top-shape" class="text-2xl font-semibold text-center mt-4"></h3>
+        <p id="top-percentage" class="text-xl text-center mt-2"></p>
+        <div id="result-container" class="mt-8 max-w-xl mx-auto"></div>
+    </section>
+
+    <!-- Workflow Cards -->
+    <section class="workflow py-16 bg-gray-200">
+        <div class="text-center">
+            <h2 class="text-3xl font-semibold">How It Works</h2>
+        </div>
+        <div class="flex justify-around mt-8">
+            <div class="card p-6 bg-white shadow-lg rounded-lg max-w-xs">
+                <h3 class="text-xl font-semibold">Upload Image</h3>
+                <p>Choose an image from your device to upload.</p>
+            </div>
+            <div class="card p-6 bg-white shadow-lg rounded-lg max-w-xs">
+                <h3 class="text-xl font-semibold">AI Process</h3>
+                <p>Our AI, trained on 100 million faces, processes your image.</p>
+            </div>
+            <div class="card p-6 bg-white shadow-lg rounded-lg max-w-xs">
+                <h3 class="text-xl font-semibold">Get Your Face Shape</h3>
+                <p>Our AI returns the most accurate prediction with up to 99.9% accuracy.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-blue-600 text-white text-center py-4">
+        <p>&copy; 2024 Face Shape Detect. All rights reserved.</p>
+    </footer>
+
+    <script>
+        function uploadImage() {
+            const fileInput = document.getElementById('file-upload');
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            axios.post('/predict', formData)
+                .then(response => {
+                    const resultContainer = document.getElementById('result-container');
+                    resultContainer.innerHTML = '';
+                    const result = response.data;
+
+                    // Sort the results in descending order
+                    const sortedResult = Object.entries(result).sort((a, b) => b[1] - a[1]);
+
+                    // Get the highest percentage result
+                    const [topShape, topPercentage] = sortedResult[0];
+                    document.getElementById('top-shape').innerText = `Your face shape is: ${topShape}`;
+                    document.getElementById('top-percentage').innerText = `${topPercentage.toFixed(2)}%`;
+
+                    // Loop through the sorted result and create progress bars
+                    sortedResult.forEach(([key, value]) => {
+                        let progressBar = `
+                            <div class="mb-4">
+                                <span class="text-lg">${key}: ${value.toFixed(2)}%</span>
+                                <div class="w-full bg-gray-300 rounded-full h-2">
+                                    <div class="bg-green-500 h-2" style="width: ${value}%"></div>
+                                </div>
+                            </div>
+                        `;
+                        resultContainer.innerHTML += progressBar;
+                    });
+
+                    // Show result section
+                    document.getElementById('result-section').classList.remove('hidden');
+                })
+                .catch(error => {
+                    console.error('Error uploading image:', error);
+                });
+        }
+    </script>
+    
+    
+</body>
+</html>
